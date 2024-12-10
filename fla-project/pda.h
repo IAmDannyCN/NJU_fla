@@ -82,6 +82,5 @@ private:
 
 public:
     PDA(ifstream& infile);
-    
     bool run(const string& input);
 };

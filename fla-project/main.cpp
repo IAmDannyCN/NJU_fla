@@ -84,6 +84,12 @@ int main(int argc, char* argv[]){
         TM tm(infile);
         tm.run(string(input), verbose);
         tm.Output(verbose);
+        // bool accept = tm.run(string(input), verbose);
+        // if(accept) {
+        //     tm.Output(verbose);
+        // } else {
+        //     cout << "illegal input" << endl;
+        // }
     } else {
         assert(0 && "Should not reach here.");
     }

@@ -225,7 +225,7 @@ TM::TM(ifstream& infile) {
     }
 }
 
-void TM::run(const string& input, bool verbose) {
+bool TM::run(const string& input, bool verbose) {
     for(int i = 0; i < (int)input.size(); i++) {
         char c = input[i];
         if(!S.count(c)) {
@@ -274,6 +274,8 @@ void TM::run(const string& input, bool verbose) {
         tape.push_back(other_tape);
         head.push_back(tape[i].begin());
     }
+
+    bool accept = false;
 
     int step_cnt = 0;
     while(true) {
@@ -346,6 +348,9 @@ void TM::run(const string& input, bool verbose) {
         }
 
         step_cnt ++;
+        if(F.count(state)) {
+            accept = true;
+        }
 
         vector<reference_wrapper<const TM_Delta>> match;
         for(auto &rule: delta) {
@@ -393,14 +398,16 @@ void TM::run(const string& input, bool verbose) {
             }
         }
     }
+
+    return accept;
 }
 
 void TM::Output(bool verbose) {
     if(!verbose) {
-        printDeque(tape[0], false);
+        printDeque(tape[0]);
     } else {
         cout << "Result: ";
-        printDeque(tape[0], false);
+        printDeque(tape[0]);
         cout << "==================== END ====================" << endl;
     }
 }

@@ -95,7 +95,9 @@ private:
         }
         return ans;
     }
-    void printDeque(const deque<char>& dq, bool printBlank=true) {
+    void printDeque(deque<char> dq, bool printBlank=true) {
+        while(!dq.empty() && dq.front() == '_') dq.pop_front();
+        while(!dq.empty() && dq.back() == '_') dq.pop_back();
         for(const auto& c : dq) {
             if(printBlank || c != '_') {
                 cout << c;
@@ -139,6 +141,6 @@ private:
 
 public:
     TM(ifstream& infile);
-    void run(const string& input, bool verbose);
+    bool run(const string& input, bool verbose);
     void Output(bool verbose);
 };
