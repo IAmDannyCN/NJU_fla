@@ -74,7 +74,7 @@ private:
     void printStack(stack<char>& s) {
         stack<char> tempStack = s;
         while (!tempStack.empty()) {
-            cout << tempStack.top();
+            cout << tempStack.top() << " ";
             tempStack.pop();
         }
         cout << endl;
@@ -82,5 +82,5 @@ private:
 
 public:
     PDA(ifstream& infile);
-    bool run(const string& input);
+    bool run(const string& input, bool verbose);
 };

@@ -29,7 +29,7 @@ int main(int argc, char* argv[]){
             } else if (!strcmp(argv[i], "--verbose") || !strcmp(argv[i], "-v")) {
                 verbose = true;
             } else {
-                cerr << "Invalid argument `" << argv[i] << "`" << endl;
+                cerr << "Invalid argument `" << argv[i] << "`." << endl;
                 return 1;
             }
         } else {
@@ -74,12 +74,15 @@ int main(int argc, char* argv[]){
     
     ifstream infile(file_name);
     if(!infile) {
-        cerr << "Cannot open file `" << file_name << "`" << endl;
+        cerr << "Cannot open file `" << file_name << "`." << endl;
         return 1;
     }
 
     if(type == TYPE_PDA) {
-        cout << (PDA(infile).run(string(input)) ? "true" : "false") << endl;
+        cout << (PDA(infile).run(string(input), verbose) ? "true" : "false") << endl;
+        if(verbose) {
+            cout << "==================== END ====================" << endl;
+        }
     } else if (type == TYPE_TM) {
         TM tm(infile);
         tm.run(string(input), verbose);

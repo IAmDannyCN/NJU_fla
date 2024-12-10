@@ -218,12 +218,30 @@ PDA::PDA(ifstream& infile) {
     }
 }
 
-bool PDA::run(const string& input) {
-    for(const char &c: input) {
+bool PDA::run(const string& input, bool verbose) {
+    for(int i = 0; i < (int)input.size(); i++) {
+        char c = input[i];
         if(!S.count(c)) {
-            cerr << "illegal input" << endl;
+            if(!verbose) {
+                cerr << "illegal input" << endl;
+            } else {
+                cerr << "Input: " << input << endl;
+                cerr << "==================== ERR ====================" << endl;
+                cerr << "error: '" << c << "' was not declared in the set of input symbols" << endl;
+                cerr << "Input: " << input << endl;
+                for(int j = 1; j <= i + 7; j++) {
+                    cerr << " ";
+                }
+                cerr << "^" << endl;
+                cerr << "==================== END ====================" << endl;
+            }
             exit(1);
-        }
+        } 
+    }
+
+    if(verbose) {
+        cout << "Input: " << input << endl;
+        cout << "==================== RUN ====================" << endl;
     }
 
     state = q0;
@@ -235,8 +253,12 @@ bool PDA::run(const string& input) {
     while(true) {
         char cur = sv.size() ? sv[0] : '\x00';
 
-        // cout << ">> state: " << state << ", input: " << cur << ", stack = ";
-        // printStack(st);
+        if(verbose) {
+            cout << "State: " << state << endl;
+            cout << "Input: " << input.substr(0, input.size() - sv.size()) << '[' << cur << ']' << (sv.size() >= 2 ? sv.to_string().substr(1) : " ") << endl;
+            cout << "Stack: " ; printStack(st);
+            cout << "---------------------------------------------" << endl;
+        }
 
         vector<reference_wrapper<const PDA_Delta>> match;
         for(auto &rule: delta) {
