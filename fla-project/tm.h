@@ -49,6 +49,15 @@ private:
     int N           {};
     vector<TM_Delta> delta    {};
 
+    int definition_record   {};
+    const int Q_OCCUR = 0x1;
+    const int S_OCCUR = 0x2;
+    const int G_OCCUR = 0x4;
+    const int q0_OCCUR = 0x8;
+    const int B_OCCUR = 0x10;
+    const int F_OCCUR = 0x20;
+    const int N_OCCUR = 0x40;
+
     // Runtime environment
     string state                        {};
     vector<deque<char>> tape            {};
@@ -110,7 +119,11 @@ private:
         if(n <= 99) return 2;
         if(n <= 999) return 3;
         if(n <= 9999) return 4;
-        return 5;
+        if(n <= 99999) return 5;
+        if(n <= 999999) return 6;
+        if(n <= 9999999) return 7;
+        if(n <= 99999999) return 8;
+        return 9;
     }
     void _Out() {
         cout << "Q: ";
@@ -140,7 +153,7 @@ private:
 
 
 public:
-    TM(ifstream& infile);
-    bool run(const string& input, bool verbose);
-    void Output(bool verbose);
+    TM(ifstream& infile, bool verbose=false);
+    bool run(const string& input, bool verbose=false);
+    void Output(bool verbose=false);
 };

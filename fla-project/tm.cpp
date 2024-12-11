@@ -2,9 +2,19 @@
 
 using namespace std;
 
-TM::TM(ifstream& infile) {
+static void CerrSyntaxError(bool verbose, int lineno, string message) {
+    if(!verbose) {
+        cerr << "syntax error" << endl;
+    } else {
+        cerr << "syntax error on line " << lineno << ": " << message << endl;
+    }
+}
+
+TM::TM(ifstream& infile, bool verbose) {
     string line;
+    int lineno = 0;
     while(getline(infile, line)) {
+        lineno ++;
         // Get rid of comments
         size_t comma_pos = line.find(';');
         if(comma_pos != string::npos) {
@@ -30,151 +40,178 @@ TM::TM(ifstream& infile) {
             try {
                 string name = sv.sv_before({'='}, {' ', '\t'}, true).to_string();
                 if(name == "Q") {
+                    definition_record |= Q_OCCUR;
                     if(!this->Q.empty()) {
                         // Second #Q
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Redefinition of #Q.");
                         exit(1);
                     }
                     sv.sv_before({'{'}, {' ', '\t'}, true);
+                    bool first = true;
                     while(sv[-1] == '{' || sv[-1] == ',') {
                         string tmp = sv.sv_before({',', '}'}, {' ', '\t'}, true).to_string();
                         if(this->Q.count(tmp)) {
                             // Redefine of Q
-                            cerr << "syntax error" << endl;
+                            CerrSyntaxError(verbose, lineno, "Redefinition of status `"+tmp+"`.");
                             exit(1);
+                        }
+                        if(sv[-1] == '}' && first && tmp.size() == 0) {
+                            continue;
                         }
                         if(!Check_Nonblank(tmp) || tmp.size() == 0) {
                             // Contains blank char or is blank itthis
-                            cerr << "syntax error" << endl;
+                            CerrSyntaxError(verbose, lineno, "Status `"+tmp+"` is empty or contains illegal characters.");
                             exit(1);
                         }
                         this->Q.insert(tmp);
+                        first = false;
                     }
                     if(sv.sv_before({'\n'}, {' ', '\t'}, true).to_string().size() != 0) {
                         // Unrecognized character left
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Illegal characters left after `}`.");
                         exit(1);
                     }
                 } else if (name == "S") {
+                    definition_record |= S_OCCUR;
                     if(!this->S.empty()) {
                         // Second #S
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Redefinition of #S.");
                         exit(1);
                     }
                     sv.sv_before({'{'}, {' ', '\t'}, true);
+                    bool first = true;
                     while(sv[-1] == '{' || sv[-1] == ',') {
                         string tmp = sv.sv_before({',', '}'}, {' ', '\t'}, true).to_string();
                         if(this->S.count(tmp[0])) {
                             // Redefine of S
-                            cerr << "syntax error" << endl;
+                            CerrSyntaxError(verbose, lineno, "Redefinition of input symbol `"+tmp+"`.");
                             exit(1);
+                        }
+                        if(sv[-1] == '}' && first && tmp.size() == 0) {
+                            continue;
                         }
                         if(!Check_Printable(tmp) || tmp.size() != 1) {
                             // Contains blank char or is blank itthis
-                            cerr << "syntax error" << endl;
+                            CerrSyntaxError(verbose, lineno, "Redefinition of input symbol `"+tmp+"`.");
                             exit(1);
                         }
                         this->S.insert(tmp[0]);
+                        first = false;
                     }
                     if(sv.sv_before({'\n'}, {' ', '\t'}, true).to_string().size() != 0) {
                         // Unrecognized character left
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Illegal characters left after `}`.");
                         exit(1);
                     }
                 } else if (name == "G") {
+                    definition_record |= G_OCCUR;
                     if(!this->G.empty()) {
                         // Second #G
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Redefinition of #G.");
                         exit(1);
                     }
                     sv.sv_before({'{'}, {' ', '\t'}, true);
+                    bool first = true;
                     while(sv[-1] == '{' || sv[-1] == ',') {
                         string tmp = sv.sv_before({',', '}'}, {' ', '\t'}, true).to_string();
                         if(this->G.count(tmp[0])) {
                             // Redefine of G
-                            cerr << "syntax error" << endl;
+                            CerrSyntaxError(verbose, lineno, "Redefinition of tape symbol `"+tmp+"`.");
                             exit(1);
+                        }
+                        if(sv[-1] == '}' && first && tmp.size() == 0) {
+                            continue;
                         }
                         if((!Check_Printable(tmp) && tmp != "_") || tmp.size() != 1) {
                             // Contains blank char or is blank itthis
-                            cerr << "syntax error" << endl;
+                            CerrSyntaxError(verbose, lineno, "Tape symbol `"+tmp+"` contains illegal characters or has length inequal to 1.");
                             exit(1);
                         }
                         this->G.insert(tmp[0]);
+                        first = false;
                     }
                     if(sv.sv_before({'\n'}, {' ', '\t'}, true).to_string().size() != 0) {
                         // Unrecognized character left
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Illegal characters left after `}`.");
                         exit(1);
                     }
                 } else if (name == "q0") {
+                    definition_record |= q0_OCCUR;
                     if(this->q0 != "") {
                         // Second #q0
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Redefinition of #q0.");
                         exit(1);
                     }
                     string tmp = sv.sv_before({'\n'}, {' ', '\t'}, true).to_string();
                     if(!this->Q.count(tmp)) {
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Undefined status `"+tmp+"`.");
                         exit(1);
                     }
                     this->q0 = tmp;
                 } else if (name == "B") {
+                    definition_record |= B_OCCUR;
                     if(this->B != 0) {
                         // Second #B
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Redefinition of #B.");
                         exit(1);
                     }
                     string tmp = sv.sv_before({'\n'}, {' ', '\t'}, true).to_string();
                     if(tmp != "_") {
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Blank symbol must be `_`.");
                         exit(1);
                     }
                     this->B = '_';
                 } else if (name == "F") {
+                    definition_record |= F_OCCUR;
                     if(!this->F.empty()) {
                         // Second #F
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Redefinition of #F.");
                         exit(1);
                     }
                     sv.sv_before({'{'}, {' ', '\t'}, true);
+                    bool first = true;
                     while(sv[-1] == '{' || sv[-1] == ',') {
                         string tmp = sv.sv_before({',', '}'}, {' ', '\t'}, true).to_string();
                         if(this->F.count(tmp)) {
                             // Redefine of F
-                            cerr << "syntax error" << endl;
+                            CerrSyntaxError(verbose, lineno, "Redefinition of final status `"+tmp+"`.");
                             exit(1);
                         }
+                        if(sv[-1] == '}' && first && tmp.size() == 0) {
+                            continue;
+                        }
                         if(!this->Q.count(tmp)) {
-                            cerr << "syntax error" << endl;
+                            CerrSyntaxError(verbose, lineno, "Undefined status `"+tmp+"`.");
                             exit(1);
                         }
                         this->F.insert(tmp);
+                        first = false;
                     }
                     if(sv.sv_before({'\n'}, {' ', '\t'}, true).to_string().size() != 0) {
                         // Unrecognized character left
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Illegal characters left after `}`.");
                         exit(1);
                     }
                 } else if (name == "N") {
+                    definition_record |= N_OCCUR;
                     if(this->N != 0) {
                         // Second #N
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Redefinition of #N.");
                         exit(1);
                     }
                     string tmp = sv.sv_before({'\n'}, {' ', '\t'}, true).to_string();
                     int i_tmp = Check_Digit(tmp);
                     if(i_tmp == -1 || i_tmp == 0) {
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "`"+tmp+"` is not a valid tape number.");
                         exit(1);
                     }
                     this->N = i_tmp;
                 } else {
-                    cerr << "syntax error" << endl;
+                    CerrSyntaxError(verbose, lineno, "Unrecognized identifier `"+name+"`.");
                     exit(1);
                 }
             } catch (const SyntaxErrorException& e) {
-                cerr << "syntax error" << endl;
+                CerrSyntaxError(verbose, lineno, "Parser error. Probably missing critical characters.");
                 exit(1);
             }
         } else {
@@ -187,42 +224,75 @@ TM::TM(ifstream& infile) {
                 string str_dir = sv.sv_before({' ', '\t'}, {}, true).to_string();
                 string str_q1 = sv.sv_before({'\n'}, {' ', '\t'}, true).to_string();
                 if(sv.size() != 0) {
-                    cerr << "syntax error" << endl;
+                    CerrSyntaxError(verbose, lineno, "Illegal characters left.");
                     exit(1);
                 }
-                if(!this->Q.count(str_q0) || !this->Q.count(str_q1)) {
-                    cerr << "syntax error" << endl;
+                if(!this->Q.count(str_q0)) {
+                    CerrSyntaxError(verbose, lineno, "Undefined status `"+str_q0+"`.");
                     exit(1);
                 }
-                if(str_Z0.size() != this->N || str_Z1.size() != this->N) {
-                    cerr << "syntax error" << endl;
+                if(!this->Q.count(str_q1)) {
+                    CerrSyntaxError(verbose, lineno, "Undefined status `"+str_q1+"`.");
+                    exit(1);
+                }
+                if(str_Z0.size() != this->N) {
+                    CerrSyntaxError(verbose, lineno, "`"+str_Z0+"` should contains #N symbols.");
+                    exit(1);
+                }
+                if(str_Z1.size() != this->N) {
+                    CerrSyntaxError(verbose, lineno, "`"+str_Z1+"` should contains #N symbols.");
                     exit(1);
                 }
                 for(char& c: str_Z0) {
                     if(c != '*' && c != this->B && !this->G.count(c)) {
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Undefined tape symbol `"+string(1, c)+"`.");
                         exit(1);
                     }
                 }
                 for(char& c: str_Z1) {
                     if(c != '*' && c != this->B && !this->G.count(c)) {
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Undefined tape symbol `"+string(1, c)+"`.");
                         exit(1);
                     }
                 }
                 for(char& c: str_dir) {
                     if(c != '*' && c != 'l' && c != 'r') {
-                        cerr << "syntax error" << endl;
+                        CerrSyntaxError(verbose, lineno, "Direction symbol should be `l`, `r` or `*`.");
                         exit(1);
                     }
                 }
                 delta.push_back(TM_Delta(move(str_q0), move(str_Z0), move(str_Z1), move(str_dir), move(str_q1)));
             } catch (const SyntaxErrorException& e) {
-                cerr << "syntax error" << endl;
+                CerrSyntaxError(verbose, lineno, "Parser error. Probably missing critical characters.");
                 exit(1);
             }
         }
     }
+    if(definition_record == 0x7f) {
+        return ;
+    }
+    if(!(definition_record & Q_OCCUR)) {
+        CerrSyntaxError(verbose, lineno, "Missing the definition for #Q.");
+    }
+    if(!(definition_record & S_OCCUR)) {
+        CerrSyntaxError(verbose, lineno, "Missing the definition for #S.");
+    }
+    if(!(definition_record & G_OCCUR)) {
+        CerrSyntaxError(verbose, lineno, "Missing the definition for #G.");
+    }
+    if(!(definition_record & q0_OCCUR)) {
+        CerrSyntaxError(verbose, lineno, "Missing the definition for #q0.");
+    }
+    if(!(definition_record & B_OCCUR)) {
+        CerrSyntaxError(verbose, lineno, "Missing the definition for #B.");
+    }
+    if(!(definition_record & F_OCCUR)) {
+        CerrSyntaxError(verbose, lineno, "Missing the definition for #F.");
+    }
+    if(!(definition_record & N_OCCUR)) {
+        CerrSyntaxError(verbose, lineno, "Missing the definition for #N.");
+    }
+    exit(1);
 }
 
 bool TM::run(const string& input, bool verbose) {
@@ -385,15 +455,19 @@ bool TM::run(const string& input, bool verbose) {
             if(rule.dir[i] == 'l') {
                 if(head[i] == tape[i].begin()) {
                     tape[i].push_front(this->B);
+                    head[i] = tape[i].begin();
+                } else {
+                    head[i] --;
                 }
-                head[i] --;
                 hidx[i] --;
                 lidx[i] = min(lidx[i], hidx[i]);
             } else if (rule.dir[i] == 'r') {
                 if(head[i] == prev(tape[i].end())) {
                     tape[i].push_back(this->B);
+                    head[i] = prev(tape[i].end());
+                } else {
+                    head[i] ++;
                 }
-                head[i] ++;
                 hidx[i] ++;
             }
         }

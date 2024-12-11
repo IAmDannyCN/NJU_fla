@@ -39,6 +39,14 @@ private:
     set<string> F   {};
     vector<PDA_Delta> delta    {};
 
+    int definition_record   {};
+    const int Q_OCCUR = 0x1;
+    const int S_OCCUR = 0x2;
+    const int G_OCCUR = 0x4;
+    const int q0_OCCUR = 0x8;
+    const int z0_OCCUR = 0x10;
+    const int F_OCCUR = 0x20;
+
     // Runtime environment
     string state    {};
     stack<char> st  {};
@@ -81,6 +89,6 @@ private:
     }
 
 public:
-    PDA(ifstream& infile);
-    bool run(const string& input, bool verbose);
+    PDA(ifstream& infile, bool verbose=false);
+    bool run(const string& input, bool verbose=false);
 };

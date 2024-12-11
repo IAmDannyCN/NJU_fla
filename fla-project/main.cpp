@@ -79,20 +79,14 @@ int main(int argc, char* argv[]){
     }
 
     if(type == TYPE_PDA) {
-        cout << (PDA(infile).run(string(input), verbose) ? "true" : "false") << endl;
+        cout << (PDA(infile, verbose).run(string(input), verbose) ? "true" : "false") << endl;
         if(verbose) {
             cout << "==================== END ====================" << endl;
         }
     } else if (type == TYPE_TM) {
-        TM tm(infile);
+        TM tm(infile, verbose);
         tm.run(string(input), verbose);
         tm.Output(verbose);
-        // bool accept = tm.run(string(input), verbose);
-        // if(accept) {
-        //     tm.Output(verbose);
-        // } else {
-        //     cout << "illegal input" << endl;
-        // }
     } else {
         assert(0 && "Should not reach here.");
     }
