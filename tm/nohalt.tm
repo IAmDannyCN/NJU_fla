@@ -1,4 +1,4 @@
-; This program goes right forever
+; This program goes left and right forever
 ; Expected Behavior: It should not halt in a few seconds.
 
 ; the finite set of states

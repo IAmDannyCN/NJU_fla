@@ -82,7 +82,7 @@ TM::TM(ifstream& infile, bool verbose) {
                     bool first = true;
                     while(sv[-1] == '{' || sv[-1] == ',') {
                         string tmp = sv.sv_before({',', '}'}, {' ', '\t'}, true).to_string();
-                        if(this->S.count(tmp[0])) {
+                        if(tmp.size() > 0 && this->S.count(tmp[0])) {
                             // Redefine of S
                             CerrSyntaxError(verbose, lineno, "Redefinition of input symbol `"+tmp+"`.");
                             exit(1);
@@ -90,9 +90,13 @@ TM::TM(ifstream& infile, bool verbose) {
                         if(sv[-1] == '}' && first && tmp.size() == 0) {
                             continue;
                         }
-                        if(!Check_Printable(tmp) || tmp.size() != 1) {
+                        if(!Check_Printable(tmp)) {
                             // Contains blank char or is blank itthis
                             CerrSyntaxError(verbose, lineno, "Redefinition of input symbol `"+tmp+"`.");
+                            exit(1);
+                        }
+                        if(tmp.size() != 1) {
+                            CerrSyntaxError(verbose, lineno, "Input symbol `"+tmp+"` has length not equal to 1.");
                             exit(1);
                         }
                         this->S.insert(tmp[0]);
@@ -114,7 +118,7 @@ TM::TM(ifstream& infile, bool verbose) {
                     bool first = true;
                     while(sv[-1] == '{' || sv[-1] == ',') {
                         string tmp = sv.sv_before({',', '}'}, {' ', '\t'}, true).to_string();
-                        if(this->G.count(tmp[0])) {
+                        if(tmp.size() > 0 && this->G.count(tmp[0])) {
                             // Redefine of G
                             CerrSyntaxError(verbose, lineno, "Redefinition of tape symbol `"+tmp+"`.");
                             exit(1);
@@ -156,6 +160,10 @@ TM::TM(ifstream& infile, bool verbose) {
                         exit(1);
                     }
                     string tmp = sv.sv_before({'\n'}, {' ', '\t'}, true).to_string();
+                    if(tmp.size() == 0 || this->G.count(tmp[0]) == 0) {
+                        CerrSyntaxError(verbose, lineno, "Undefined symbol `"+tmp+"` as blank symbol.");
+                        exit(1);
+                    }
                     if(tmp != "_") {
                         CerrSyntaxError(verbose, lineno, "Blank symbol must be `_`.");
                         exit(1);
@@ -444,7 +452,34 @@ bool TM::run(const string& input, bool verbose) {
         if(match.size() == 0) {
             break;
         }
-        assert(match.size() == 1);
+        // if(match.size() > 1) {
+        //     cerr << "Multiple delta matching!" << endl;
+        //     if(verbose) {
+        //         for(auto &d: match) {
+        //             d.get()._Out();
+        //         }
+        //     }
+        //     exit(1);
+        // }
+        if(match.size() > 1) {
+            auto match_backup(match);
+            for(auto it = match.begin(); it != match.end(); ) {
+                if(it->get().is_Z0_all_star()) {
+                    it = match.erase(it);
+                } else {
+                    it ++;
+                }
+            }
+            if(match.size() != 1) {
+                cerr << "Multiple delta matching! (conflicting)" << endl;
+                if(verbose) {
+                    for(auto &d: match_backup) {
+                        d.get()._Out();
+                    }
+                }
+                exit(1);
+            }
+        }
 
         const TM_Delta& rule = match[0];
         state = rule.q1;

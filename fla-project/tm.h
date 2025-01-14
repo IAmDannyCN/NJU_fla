@@ -23,8 +23,16 @@ public:
     string Z1;
     string dir;
 
-    void _Out() {
+    void _Out() const {
         cout << q0 << " " << Z0 << " " << Z1 << " " << dir << " " << q1 << endl;
+    }
+    inline bool is_Z0_all_star() const {
+        for(const char &c: Z0) {
+            if(c != '*') {
+                return false;
+            }
+        }
+        return true;
     }
 };
 

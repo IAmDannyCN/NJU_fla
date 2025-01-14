@@ -1,5 +1,5 @@
-; This example program checks if the input string is in \(L = \{a^nb^n | n \ge 1\}\).
-; Input: a string of a's and b's, e.g. 'aabb'
+; This example program checks if the input string is parenthesised.
+; Input: a string of ('s and )'s, e.g. '(())()'
 
 ; the finite set of states
 #Q = {q0,accept}

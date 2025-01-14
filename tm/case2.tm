@@ -1,5 +1,5 @@
-; This program does multiplication
-; Input: a string of a's and then b's, e.g. 'aaabb'
+; This program decides a perfect square
+; Input: a string of 1's, e.g. '111111111'
 
 ; the finite set of states
 #Q = {0,check,add,rev,true,true1,true2,true3,false,false1,false2,false3,false4,halt_reject,halt_accept}

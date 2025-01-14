@@ -82,7 +82,7 @@ PDA::PDA(ifstream& infile, bool verbose) {
                     bool first = true;
                     while(sv[-1] == '{' || sv[-1] == ',') {
                         string tmp = sv.sv_before({',', '}'}, {' ', '\t'}, true).to_string();
-                        if(this->S.count(tmp[0])) {
+                        if(tmp.size() > 0 && this->S.count(tmp[0])) {
                             // Redefine of S
                             CerrSyntaxError(verbose, lineno, "Redefinition of input symbol `"+tmp+"`.");
                             exit(1);
@@ -114,7 +114,7 @@ PDA::PDA(ifstream& infile, bool verbose) {
                     bool first = true;
                     while(sv[-1] == '{' || sv[-1] == ',') {
                         string tmp = sv.sv_before({',', '}'}, {' ', '\t'}, true).to_string();
-                        if(this->G.count(tmp[0])) {
+                        if(tmp.size() > 0 && this->G.count(tmp[0])) {
                             // Redefine of G
                             CerrSyntaxError(verbose, lineno, "Redefinition of stack symbol `"+tmp+"`.");
                             exit(1);

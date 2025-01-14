@@ -51,9 +51,8 @@ syntax error on line 28: Missing the definition for #F.
 使用 `StringView::sv_before` 可以使用类似于 `LL(1)` 文法的方式对输入进行解析。例如对于 `#Q = {0,run,halt,accept}`，可以通过以下的调用序列完成解析：
 ```c
 StringView sv(line);
-assert(sv[0] == '#')
 
-string identifier =  sv.sv_before({'='}, {' ', '\t'}, true).to_string(); // "Q"
+string identifier =  sv.sv_before({'='}, {' ', '\t'}, true).to_string(); // "#Q"
 string nothing    =  sv.sv_before({'{'}, {' ', '\t'}, true).to_string(); // ""
 while(sv[-1] != '}') {
 	string cu = sv.sv_before({',', '}'}, {' ', '\t'}, true).to_string(); // "0", "run", ...
